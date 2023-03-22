@@ -1,0 +1,64 @@
+const Specification = require('../models/specificationModel')
+
+// GET all dummy products
+const dummyProducts = (req, res) => {
+    axios.get('https://dummyjson.com/products')
+    .then(response => res.status(200).send(response.data))
+    .catch(error => {
+        console.error(error);
+        res.status(500).send('Error fetching data from Fake Store API');
+    });
+}
+
+// GET all dummy categories
+const dummyCategories = (req, res) => {
+    axios.get('https://dummyjson.com/products/categories')
+    .then(response => res.status(200).send(response.data))
+    .catch(error => {
+        console.error(error)
+        res.status(500).send('Error fetching data from Fake Store API')
+    })
+}
+
+// GET all specifications
+const getSpecifications = async (req, res) => {
+    try {
+        const specifications = await Specification.find();
+        res.status(200).json(specifications);
+  } catch (error) {
+        res.status(500).json({ error: error.message });
+  }
+}
+
+// POST a specification
+const postSpecification = async (req, res) => {
+    const {resolution, supply_voltage, current_consumption, max_response_frequency, rising_time, falling_time} = req.body
+    try {
+        const specification = await Specification.create({resolution, supply_voltage, current_consumption, max_response_frequency, rising_time, falling_time})
+        res.status(201).json(specification)
+    } catch (error) {
+        res.status(404).json({error: error.message})
+    }
+}
+
+const patchSpecification = async (req, res) => {
+    const { id } = req.params;
+    const { resolution, supply_voltage, current_consumption, max_response_frequency, rising_time, falling_time } = req.body;
+    try {
+      const result = await Specification.updateOne({ _id: id }, { $set: { resolution, supply_voltage, current_consumption, max_response_frequency, rising_time, falling_time } });
+      if (result.nModified === 0) {
+        res.status(404).json({ error: `Specification with ID ${id} not found` });
+      } else {
+        res.status(200).json({ message: `Specification with ID ${id} updated successfully` });
+      }
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+ }
+
+module.exports = {
+    dummyProducts,
+    dummyCategories,
+    getSpecifications,
+    postSpecification
+}
